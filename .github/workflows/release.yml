@@ -18,11 +18,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Create Zip File
-      run: zip -r cache-everything-${GITHUB_REF_NAME}.zip plugin/ -x "*.git*" -x "node_modules/*"
+    - name: Rename directory
+      run: mv plugin cache-everything
 
-    - name: List files
-      run: ls -l
+    - name: Create Zip File
+      run: zip -r cache-everything-${GITHUB_REF_NAME}.zip cache-everything/ -x "*.git*" -x "node_modules/*"
 
     - name: Define GITHUB_REF_NAME
       run: echo "GITHUB_REF_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
