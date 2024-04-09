@@ -1,0 +1,57 @@
+version: '3.1'
+
+services:
+  wordpress:
+    build:
+      context: .
+      dockerfile: Dockerfile-wordpress
+    image: wordpress:latest
+    platform: linux/arm64  # Changed to ARM64
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wce_wordpress_data:/var/www/html
+      - ./plugin:/var/www/html/wp-content/plugins/cache-everything  # Mount the plugin directory
+    restart: always
+
+  db:
+    image: mysql:5.7
+    platform: linux/amd64  # Changed to ARM64
+    volumes:
+      - wce_db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    platform: linux/amd64  # Changed to ARM64
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      - db
+    restart: always
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    platform: linux/arm64  # Check if ARM64 is supported
+    command: tunnel run a1b67e02-62ff-4bd8-b255-0d87a4810cd2
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - wordpress
+
+volumes:
+  wce_wordpress_data:
+  wce_db_data:
