@@ -39,12 +39,19 @@ jobs:
         prerelease: false
         body: "Description of the release"
 
+    - name: Set asset path and name
+      run: |
+        echo "ASSET_PATH=./cache-everything-${GITHUB_REF_NAME}.zip" >> $GITHUB_ENV
+        echo "ASSET_NAME=cache-everything-${GITHUB_REF_NAME}.zip" >> $GITHUB_ENV
+      env:
+        GITHUB_REF_NAME: ${{ env.GITHUB_REF_NAME }}
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./cache-everything-${GITHUB_REF_NAME}.zip
-        asset_name: cache-everything-${GITHUB_REF_NAME}.zip
+        asset_path: ${{ env.ASSET_PATH }}
+        asset_name: ${{ env.ASSET_NAME }}
         asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
