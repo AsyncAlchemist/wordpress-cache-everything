@@ -19,11 +19,23 @@ function cache_everything_handle_css_request() {
         array_push($all_roles, 'guest', 'user');
 
         foreach ($all_roles as $slug) {
-            // Now $slug correctly represents each role slug
-            // Added !important to ensure this rule overrides others
-            echo ".$site_prefix-$slug { display: none !important; }\n";
-        }
+            // Only apply the rule when the Elementor editor is not active
+            echo "body:not(.elementor-editor-active) .$site_prefix-$slug { display: none !important; }\n";
 
+            // Ensure the parent element is positioned relatively
+            echo "body.elementor-editor-active .$site_prefix-$slug { position: relative; }\n";
+
+            // Apply the rule specifically when the Elementor editor is active
+            echo "body.elementor-editor-active .$site_prefix-$slug::after { 
+                content: '👁️';
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 20px; /* Adjust size as needed */
+                z-index: 1000; /* Ensure it's above other content */
+                pointer-events: none; /* Allows clicking through the icon */
+            }\n";
+        }
         exit;
     }
 }

@@ -42,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
  * @param {string} stylesheetId - The ID of the stylesheet from which to delete the rules.
  */
 function deleteCSSRules(selectorText, stylesheetId) {
+    // Modify the selector to include the new condition
+    const modifiedSelectorText = `body:not(.elementor-editor-active) ${selectorText}`;
+
     // Find the specified stylesheet by ID
     const styleSheet = [...document.styleSheets].find(
         sheet => sheet.ownerNode.id === stylesheetId
@@ -58,7 +61,7 @@ function deleteCSSRules(selectorText, stylesheetId) {
 
     // Since deleting a rule shifts subsequent rules' indices, iterate backwards
     for (let i = rules.length - 1; i >= 0; i--) {
-        if (rules[i].selectorText === selectorText) {
+        if (rules[i].selectorText === modifiedSelectorText) {
             // Log the rule that is about to be deleted
             debugPrint(`Deleting CSS rule: ${rules[i].cssText}`);
             // Delete the rule
@@ -68,7 +71,7 @@ function deleteCSSRules(selectorText, stylesheetId) {
     }
 
     if (!found) {
-        console.warn(`No CSS rule found for selector "${selectorText}" in stylesheet with ID "${stylesheetId}".`);
+        console.warn(`No CSS rule found for selector "${modifiedSelectorText}" in stylesheet with ID "${stylesheetId}".`);
     }
 }
 
@@ -83,6 +86,9 @@ function deleteCSSRules(selectorText, stylesheetId) {
  * @param {string} ruleContent - The content of the CSS rule to add.
  */
 function addCSSRules(selectorText, stylesheetId, ruleContent) {
+    // Modify the selector to include the new condition
+    const modifiedSelectorText = `body:not(.elementor-editor-active) ${selectorText}`;
+
     // Find the specified stylesheet by ID
     const styleSheet = [...document.styleSheets].find(
         sheet => sheet.ownerNode.id === stylesheetId
@@ -95,16 +101,16 @@ function addCSSRules(selectorText, stylesheetId, ruleContent) {
 
     // Check if a rule with the given selector already exists
     const existingRuleIndex = Array.from(styleSheet.cssRules).findIndex(
-        rule => rule.selectorText === selectorText
+        rule => rule.selectorText === modifiedSelectorText
     );
 
     // If the rule does not already exist, add it
     if (existingRuleIndex === -1) {
-        const fullRule = `${selectorText} { ${ruleContent} }`;
+        const fullRule = `${modifiedSelectorText} { ${ruleContent} }`;
         styleSheet.insertRule(fullRule, styleSheet.cssRules.length);
         debugPrint(`Added new CSS rule: ${fullRule}`);
     } else {
-        debugPrint(`CSS rule for selector "${selectorText}" already exists. No action taken.`);
+        debugPrint(`CSS rule for selector "${modifiedSelectorText}" already exists. No action taken.`);
     }
 }
 
