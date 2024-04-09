@@ -1,0 +1,39 @@
+name: Release WordPress Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Create Zip File
+      run: zip -r cache-everything-${GITHUB_REF_NAME}.zip plugin/ -x "*.git*" -x "node_modules/*"
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        body: "Description of the release"
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./cache-everything-${GITHUB_REF_NAME}.zip
+        asset_name: cache-everything-${GITHUB_REF_NAME}.zip
+        asset_content_type: application/zip
