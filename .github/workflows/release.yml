@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -21,6 +20,12 @@ jobs:
 
     - name: Create Zip File
       run: zip -r cache-everything-${GITHUB_REF_NAME}.zip plugin/ -x "*.git*" -x "node_modules/*"
+
+    - name: List files
+      run: ls -l
+
+    - name: Define GITHUB_REF_NAME
+      run: echo "GITHUB_REF_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
 
     - name: Create Release
       id: create_release
