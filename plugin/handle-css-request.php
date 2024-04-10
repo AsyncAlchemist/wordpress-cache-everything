@@ -26,7 +26,7 @@ function cache_everything_handle_css_request() {
             echo "body.elementor-editor-active .$site_prefix-$slug { position: relative; }\n";
 
             // Apply the rule specifically when the Elementor editor is active
-            echo "body.elementor-editor-active .$site_prefix-$slug::after { 
+            echo "body.elementor-editor-active .$site_prefix-$slug::after {
                 content: '👁️';
                 position: absolute;
                 top: 0;

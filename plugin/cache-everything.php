@@ -3,19 +3,21 @@
  * Plugin Name: Cache Everything
  * Plugin URI: https://github.com/AsyncAlchemist
  * Description: A simple plugin to cache everything in Wordpress.
- * Version: 0.19
+ * Version: 0.20
  * Author: Taylor Selden
  * Author URI: https://github.com/AsyncAlchemist
  */
 define('CACHE_EVERYTHING_JS_URL', 'wp-content/plugins/cache-everything/js');
 define('CACHE_EVERYTHING_CSS_URL', 'wp-content/plugins/cache-everything/css');
-define('CACHE_EVERYTHING_VERSION', '0.19');
+define('CACHE_EVERYTHING_VERSION', '0.20');
 
 require_once(plugin_dir_path(__FILE__) . 'handle-js-request.php');
 require_once(plugin_dir_path(__FILE__) . 'handle-css-request.php');
 require_once(plugin_dir_path(__FILE__) . 'helpers.php');
 require_once(plugin_dir_path(__FILE__) . 'admin/menu.php');
-
+require_once(plugin_dir_path(__FILE__) . 'admin/configuration.php');
+require_once(plugin_dir_path(__FILE__) . 'admin/readme.php');
+require_once(plugin_dir_path(__FILE__) . 'admin/css-classes.php');
 
 /**
  * Flushes rewrite rules on plugin activation and deactivation.
@@ -98,3 +100,31 @@ function cache_everything_enqueue_scripts() {
     
 }
 add_action('wp_enqueue_scripts', 'cache_everything_enqueue_scripts');
+
+function cache_everything_modify_headers() {
+    // Check if the admin bar is showing, and if so, return early to avoid caching
+    if (is_admin_bar_showing()) {
+        return;
+    }
+
+    // Retrieve the options with a default to an empty array if not set
+    $options = get_option('cache_everything_options', []);
+
+    // Retrieve cache times with defaults
+    $max_age = get_option('cache_everything_max_age', 28800);
+    $stale_while_revalidate = get_option('cache_everything_stale_while_revalidate', 86400);
+
+    // Calculate the Expires header value
+    $expires_time = gmdate('D, d M Y H:i:s', time() + $max_age) . ' GMT';
+
+    // Loop through each option and apply headers if enabled
+    foreach ($options as $option => $value) {
+        if ($value && function_exists($option) && call_user_func($option)) {
+            header("Cache-Control: public, max-age=$max_age, stale-while-revalidate=$stale_while_revalidate");
+            header("Expires: $expires_time");
+            header("X-WCE-Cache: public, max-age=$max_age, stale-while-revalidate=$stale_while_revalidate");
+            break; // Stop the loop once a match is found and header is set
+        }
+    }
+}
+add_action('template_redirect', 'cache_everything_modify_headers');

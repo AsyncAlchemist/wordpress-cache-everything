@@ -1,23 +1,23 @@
-# Cache Everything WordPress Plugin
+# Cache Everything Plugin
 
 The Cache Everything plugin is designed to enhance the performance of WordPress sites by caching dynamic aspects of the site, including HTML for logged-in users. This plugin dynamically generates CSS and JavaScript based on user roles, ensuring that cached content is personalized and up-to-date.
 
 ## Features
 
-- **Dynamic JavaScript and CSS**: Generates JavaScript and CSS files dynamically based on the user's login status and roles.
-- **Docker Support**: Includes a Docker Compose configuration for easy testing/development setup.
+- **Dynamic JavaScript and CSS Generation**: Tailors JavaScript and CSS files dynamically to the user's login status and roles, enhancing the personalized experience and performance.
+- **Comprehensive Docker Support**: Facilitates an effortless testing and development environment setup with a Docker Compose file, ensuring compatibility and ease of use across various systems.
+- **Advanced Caching Options**: Offers extensive caching configurations through the admin menu, allowing fine-tuned control over what content is cached and for how long, based on specific conditions like user roles, post types, and more.
+- **Debug Mode for Developers**: Includes a debug mode that can be enabled or disabled via the admin menu, aiding developers in troubleshooting and refining the caching logic with detailed console logs.
 
 ## Installation
 
-1. **Clone the Plugin**: Clone this repository into your WordPress plugins directory.
-    ```bash
-    git clone https://github.com/AsyncAlchemist/cache-everything.git wp-content/plugins/cache-everything
-    ```
-2. **Activate the Plugin**: Navigate to the WordPress admin panel, go to Plugins, and activate the "Cache Everything" plugin.
+1. **Download the Plugin**: Visit the [Cache Everything Releases page](https://github.com/AsyncAlchemist/wordpress-cache-everything/releases) on GitHub. Download the latest release zip file to your computer.
+2. **Upload the Plugin**: Log in to your WordPress admin panel. Navigate to Plugins > Add New > Upload Plugin. Choose the downloaded zip file and click "Install Now".
+3. **Activate the Plugin**: After the installation is complete, click on "Activate Plugin" to activate Cache Everything on your WordPress site.
 
 ## Usage
 
-Once activated, the plugin automatically starts caching JavaScript and CSS files dynamically. It also adds a custom admin menu where you can view the plugin's readme file.
+After activating the plugin, it begins to cache JavaScript and CSS files dynamically to enhance your site's performance. To configure the plugin settings to your preference, navigate to the custom admin menu added by the plugin. Here, you can adjust caching options, debug settings, and view the plugin's readme file for more detailed information.
 
 ### Viewing the Readme File
 
@@ -25,31 +25,30 @@ Navigate to the "Cache Everything" menu in the WordPress admin panel to view the
 
 ## Configuration
 
-No additional configuration is required. However, you can customize the plugin's behavior by editing its PHP and JavaScript files.
+To customize the plugin's behavior, navigate to the WordPress admin panel and access the "Cache Everything" settings page. Here, you can configure various options such as:
 
-### Customizing CSS and JavaScript
+- **Caching Options**: Select the types of content you wish to cache, including posts, pages, and custom post types.
+- **Cache Expiration Times**: Set the maximum age for cached content and configure the stale-while-revalidate behavior to ensure content freshness.
+- **Debug Mode**: Enable or disable debug mode to assist in troubleshooting with detailed console logs.
 
-Edit the `public/js/cache-everything.js` file to modify the client-side logic, such as how user roles are handled and CSS is updated dynamically.
+## Development
 
-### REST API Endpoint
+To add new features or modify existing ones, edit the PHP files in the plugin directory and the JavaScript files in the `public/js` directory.
 
-The plugin registers a custom REST API endpoint at `/wp/v2/user_status` that returns the user's login status and roles.
+### Docker
 
-## Docker Support
-
-The plugin includes a `docker-compose.yml` file for easy setup and deployment using Docker. This configuration sets up WordPress, MySQL, phpMyAdmin, and Cloudflared services.
+The plugin includes a `docker-compose.yml` file for easy setup and deployment using Docker. This configuration sets up WordPress, MySQL, phpMyAdmin, and Cloudflared services to allow for easy testing in a development environment.
 
 To use Docker, run:
 
 `docker-compose up -d`
 
-## Development
-
-### Adding New Features
-To add new features or modify existing ones, edit the PHP files in the plugin directory and the JavaScript files in the `public/js` directory.
-
-### Debugging
-Use the `cache_everything_debug_log` function to log custom debug messages to the plugin's log file for troubleshooting.
+Make sure to create a `.env` file and define the following passwords/tokens:
+```
+MYSQL_ROOT_PASSWORD=YOUR_PASSWORD_HERE
+WORDPRESS_DB_PASSWORD=YOUR_PASSWORD_HERE
+TUNNEL_TOKEN=YOUR_CLOUDFLARE_TOKEN_HERE
+```
 
 ### Contributing
 Contributions are welcome. Please fork the repository, make your changes, and submit a pull request.

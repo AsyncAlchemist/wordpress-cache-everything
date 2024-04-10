@@ -33,3 +33,21 @@ function get_site_prefix() {
         return $host_parts[0];
     }
 }
+
+/**
+ * Generates an array of CSS classes based on site prefix and user role slugs, including guest and user.
+ *
+ * @return array An array of CSS classes.
+ */
+function generate_css_classes_based_on_roles() {
+    $site_prefix = get_site_prefix();
+    $role_slugs = cache_everything_get_role_slugs();
+    $css_classes = array_map(function($slug) use ($site_prefix) {
+        return $site_prefix . '-' . $slug;
+    }, $role_slugs);
+
+    // Add guest and user classes
+    array_push($css_classes, $site_prefix . '-guest', $site_prefix . '-user');
+
+    return $css_classes;
+}
