@@ -43,6 +43,10 @@ To use Docker, run:
 
 `docker-compose up -d`
 
+If you make changes to the development environment, rebuild the container:
+
+`docker-compose down;docker-compose up --build -d`
+
 Make sure to create a `.env` file and define the following passwords/tokens:
 ```
 MYSQL_ROOT_PASSWORD=YOUR_PASSWORD_HERE

@@ -18,11 +18,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Rename directory
-      run: mv plugin cache-everything
+    - name: Prepare files
+      run: |
+        mkdir cache-everything
+        mv * .[^.]* cache-everything
 
     - name: Create Zip File
-      run: zip -r cache-everything-${GITHUB_REF_NAME}.zip cache-everything/ -x "*.git*" -x "node_modules/*"
+      run: zip -r cache-everything-${GITHUB_REF_NAME}.zip cache-everything/ -x "*.git*" -x "cache-everything/node_modules/*" -x "cache-everything/Dockerfile" -x "cache-everything/docker-compose.yml"
 
     - name: Define GITHUB_REF_NAME
       run: echo "GITHUB_REF_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
