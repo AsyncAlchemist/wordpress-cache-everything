@@ -21,8 +21,9 @@ jobs:
     - name: Prepare files
       run: |
         mkdir cache-everything
-        mv * .[^.]* cache-everything
-
+        shopt -s extglob
+        mv !(cache-everything) cache-everything/
+        
     - name: Create Zip File
       run: zip -r cache-everything-${GITHUB_REF_NAME}.zip cache-everything/ -x "*.git*" -x "cache-everything/node_modules/*" -x "cache-everything/Dockerfile" -x "cache-everything/docker-compose.yml"
 
@@ -57,3 +58,4 @@ jobs:
         asset_content_type: application/zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
