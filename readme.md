@@ -1,4 +1,4 @@
-# Cache Everything Plugin
+# Cache Everything Wordpress Plugin
 
 The Cache Everything plugin is designed to enhance the performance of WordPress sites by caching dynamic aspects of the site, including HTML for logged-in users. This plugin dynamically generates CSS and JavaScript based on user roles, ensuring that cached content is personalized and up-to-date.
 

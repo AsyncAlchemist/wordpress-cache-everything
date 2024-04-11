@@ -11,37 +11,63 @@ function cache_everything_activate() {
  * Add an admin menu item for the plugin.
  */
 function cache_everything_add_admin_menu() {
-    // Settings Page
-    add_menu_page(
-        'Cache Everything Settings', // Page title
+    add_submenu_page(
+        'options-general.php', // Parent slug for Settings menu
+        'Cache Everything', // Page title
         'Cache Everything', // Menu title
         'manage_options', // Capability
-        'cache-everything-settings', // Menu slug for settings
-        'cache_everything_settings_page', // Function to display the settings page
-        'dashicons-cloud', // Icon URL
-        6 // Position
-    );
-
-    add_submenu_page(
-        'cache-everything-settings', // Parent slug
-        'Available CSS Classes', // Page title
-        'CSS Classes', // Menu title
-        'manage_options', // Capability
-        'cache-everything-css-classes', // Menu slug for CSS Classes
-        'cache_everything_display_css_classes' // Function to display the CSS Classes page
-    );
-
-    // Readme Page
-    add_submenu_page(
-        'cache-everything-settings', // Parent slug
-        'Cache Everything Readme', // Page title
-        'Readme', // Menu title
-        'manage_options', // Capability
-        'cache-everything-readme', // Menu slug for readme
-        'cache_everything_display_readme' // Function to display the readme page
+        'cache-everything', // Menu slug
+        'cache_everything_settings_wrapper_page' // Function to display the wrapper settings page
     );
 
     add_action('admin_init', 'cache_everything_register_settings');
 }
 
 add_action('admin_menu', 'cache_everything_add_admin_menu');
+
+function cache_everything_admin_tabs( $current = 'settings' ) {
+    // Display the plugin title and version
+    echo '<h1>Cache Everything v' . CACHE_EVERYTHING_VERSION . '</h1>';
+
+    $tabs = array(
+        'settings' => 'Settings',
+        'css_classes' => 'CSS Classes',
+        'readme' => 'Readme'
+    );
+    echo '<h2 class="nav-tab-wrapper">';
+    foreach( $tabs as $tab => $name ){
+        $class = ( $tab == $current ) ? ' nav-tab-active' : '';
+        echo "<a class='nav-tab$class' href='?page=cache-everything&tab=$tab'>$name</a>";
+    }
+    echo '</h2>';
+}
+
+function cache_everything_settings_wrapper_page() {
+    // Determine the current tab. Default to 'settings' if not set.
+    $current_tab = isset($_GET['tab']) ? $_GET['tab'] : 'settings';
+
+    // Output the tabs
+    cache_everything_admin_tabs($current_tab);
+
+    // Switch to determine which content to load based on the current tab
+    switch ($current_tab) {
+        case 'settings':
+            cache_everything_settings_page();
+            break;
+        case 'css_classes':
+            cache_everything_display_css_classes();
+            break;
+        case 'readme':
+            cache_everything_display_readme();
+            break;
+        default:
+            cache_everything_settings_page(); // Default to settings if the tab is unrecognized
+            break;
+    }
+}
+
+function cache_everything_enqueue_admin_styles() {
+    wp_enqueue_style('wp-admin');
+}
+
+add_action('admin_enqueue_scripts', 'cache_everything_enqueue_admin_styles');
