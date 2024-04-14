@@ -1,6 +1,29 @@
 const DYNAMIC_SHEET_ID = 'cache-everything-dynamic-css';
 const STATIC_SHEET_ID = 'cache-everything-css';
 
+document.addEventListener('DOMContentLoaded', function() {
+    debugPrint('DOM fully loaded and parsed at:', getTimestampWithMilliseconds());
+});
+
+/**
+ * Creates and appends a prefetch link element to the document head.
+ * 
+ * This function dynamically creates a link element with the rel attribute set to 'prefetch',
+ * allowing the browser to prefetch the specified resource. Prefetching a resource can improve
+ * performance by loading parts of a web page before they are needed.
+ * 
+ * @param {string} url - The URL of the resource to prefetch.
+ */
+function addPrefetchLink(url) {
+    // Check if a prefetch link for this URL already exists to avoid duplicates
+    if (!document.querySelector(`link[rel="prefetch"][href="${url}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = url;
+        document.head.appendChild(link);
+    }
+}
+
 /**
  * Logs messages to the console if debug mode is enabled. Supports multiple arguments.
  * 
@@ -26,10 +49,6 @@ function getTimestampWithMilliseconds() {
            String(now.getSeconds()).padStart(2, '0') + '.' +
            String(now.getMilliseconds()).padStart(3, '0');
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    debugPrint('DOM fully loaded and parsed at:', getTimestampWithMilliseconds());
-});
 
 /**
  * Deletes all CSS rules matching a given selector from a specified stylesheet and logs the deletion.
@@ -320,11 +339,107 @@ function initializeUserRoles() {
     }
 }
 
-debugPrint(`Script Starting: ${getTimestampWithMilliseconds()}`);
+function setupPrefetching() {
+    const isEditorActive = document.querySelector('.elementor-editor-active') !== null;
+    const isInAdminPanel = window.location.href.includes('/wp-admin/');
+    const isWpAdminBarPresent = document.getElementById('wpadminbar') !== null;
+    const isPrefetchingGloballyEnabled = wce_Data.prefetchEnabled == '1';
 
+    const shouldPrefetch = isPrefetchingGloballyEnabled && !isWpAdminBarPresent && !isInAdminPanel && !isEditorActive;
+    debugPrint(`Prefetching is ${shouldPrefetch ? 'enabled' : 'disabled'}.`);
+    if (shouldPrefetch) {
+        const links = document.querySelectorAll('a');
+        // Get the current page's origin once, before the loop
+        const currentPageOrigin = window.location.origin;
+
+        // Start with predefined exclude conditions
+        const excludeConditions = [
+            url => !url, // Exclude if URL is falsy
+            url => url.startsWith('#'), // Exclude if URL is an anchor link
+            url => url.includes('?'), // Exclude if URL has query parameters
+            url => /\/login|\/signin/.test(url), // More specific: Exclude if URL path contains /login or /signin
+            url => /\/logout|\/signout/.test(url), // More specific: Exclude if URL path contains /logout or /signout
+            url => url.startsWith('javascript:'), // Exclude if URL is a JavaScript call
+            url => /\.(pdf|zip|rar|exe|doc|docx|xls|xlsx)$/i.test(url), // Exclude common file downloads
+            url => /\.(jpg|jpeg|png|webp|avif|gif|svg|mp4|mp3)$/i.test(url), // Exclude common media files
+            url => url.includes('/action/toggle'), // Exclude URLs intended for actions
+            url => url.includes('#!'), // Exclude URLs with hashbangs (ajax)
+            url => url.includes('/subscribe'), // Example: Exclude subscription URLs
+            url => {
+                try {
+                    const linkOrigin = new URL(url, currentPageOrigin).origin;
+                    return linkOrigin !== currentPageOrigin; // Exclude if URL is from another domain
+                } catch (e) {
+                    return true; // Exclude if URL is malformed
+                }
+            },
+            url => url.startsWith('mailto:'), // Example: Exclude if URL is a mailto link
+            url => url.startsWith('tel:'), // Exclude telephone links
+            url => url.startsWith('sms:'), // Exclude SMS links
+            url => url.startsWith('file:'), // Exclude local file links
+            url => url.startsWith('ftp:'), // Exclude FTP links
+            url => url.startsWith('blob:'), // Exclude blob URLs
+            url => url.startsWith('data:'), // Exclude data URLs
+            url => url.startsWith('chrome-extension:'), // Exclude Chrome extension links
+            url => url.startsWith('about:'), // Exclude browser internal pages
+            // Additional conditions can be added here
+        ];
+
+        // Function to extract path and query from a URL
+        const getPathAndQuery = url => {
+            const urlObj = new URL(url, currentPageOrigin);
+            return urlObj.pathname + urlObj.search;
+        };
+
+        // Add "Starts With" exclusions
+        (wce_Data.prefetchStartsWith || []).forEach(pattern => {
+            excludeConditions.push(url => getPathAndQuery(url).startsWith(pattern));
+        });
+
+        // Add "Contains" exclusions
+        (wce_Data.prefetchContains || []).forEach(pattern => {
+            excludeConditions.push(url => getPathAndQuery(url).includes(pattern));
+        });
+
+        // Add "Regex Patterns" exclusions
+        (wce_Data.prefetchRegex || []).forEach(pattern => {
+            const regex = new RegExp(pattern);
+            excludeConditions.push(url => regex.test(getPathAndQuery(url)));
+        });
+
+        links.forEach(link => {
+            const url = link.getAttribute('href');
+            // Use the array to check if any condition applies
+            if (excludeConditions.some(condition => condition(url))) {
+                return;
+            }
+
+            // Named function for mouseover event
+            function handleMouseOver() {
+                addPrefetchLink(url);
+                // Remove the event listener after prefetching
+                link.removeEventListener('mouseover', handleMouseOver);
+            }
+
+            // Add the event listener
+            link.addEventListener('mouseover', handleMouseOver);
+        });
+    }
+}
+
+// Log the start time
+debugPrint(`Script Starting: ${getTimestampWithMilliseconds()}`);
 
 // Initial call to set up roles on page load
 initializeUserRoles();
 
 // Fetch the role data
 addScriptToDOM();
+
+// Check if the DOM is already loaded
+if (document.readyState === "loading") {
+    document.addEventListener('DOMContentLoaded', setupPrefetching);
+} else {
+    // DOMContentLoaded has already fired, call the function directly
+    setupPrefetching();
+}

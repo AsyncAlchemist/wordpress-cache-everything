@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Register settings for the Cache Everything plugin.
+ * Register cache settings for the Cache Everything plugin.
  */
-function cache_everything_register_settings() {
+function cache_everything_register_cache_settings() {
     // Register settings for cache times first
     register_setting('cache_everything_settings', 'cache_everything_max_age');
     register_setting('cache_everything_settings', 'cache_everything_stale_while_revalidate');
@@ -33,7 +33,7 @@ function cache_everything_register_settings() {
         'cache_everything_cache_times_section' // Use the new section ID
     );
     // Register the new caching options
-    register_setting('cache_everything_settings', 'cache_everything_options');
+    register_setting('cache_everything_settings', 'cache_everything_cache_options');
 
     // Add the Caching Options section
     add_settings_section(
@@ -117,9 +117,9 @@ function cache_everything_debug_mode_callback() {
 }
 
 function cache_everything_checkbox_callback($args) {
-    $options = get_option('cache_everything_options');
+    $options = get_option('cache_everything_cache_options');
     $checked = isset($options[$args['id']]) ? checked($options[$args['id']], 1, false) : '';
-    echo "<input type='checkbox' id='{$args['id']}' name='cache_everything_options[{$args['id']}]' value='1' $checked>";
+    echo "<input type='checkbox' id='{$args['id']}' name='cache_everything_cache_options[{$args['id']}]' value='1' $checked>";
     echo "<label for='{$args['id']}'>{$args['description']}</label>";
 }
 
@@ -150,7 +150,7 @@ function cache_everything_stale_while_revalidate_callback() {
 }
 
 // Adjusted function to display settings
-function cache_everything_settings_page() {
+function cache_everything_cache_settings_page() {
     // Continue with the settings form
     echo '<form action="options.php" method="post">';
     settings_fields('cache_everything_settings');

@@ -15,7 +15,8 @@ require_once(plugin_dir_path(__FILE__) . 'handle-js-request.php');
 require_once(plugin_dir_path(__FILE__) . 'handle-css-request.php');
 require_once(plugin_dir_path(__FILE__) . 'helpers.php');
 require_once(plugin_dir_path(__FILE__) . 'admin/menu.php');
-require_once(plugin_dir_path(__FILE__) . 'admin/configuration.php');
+require_once(plugin_dir_path(__FILE__) . 'admin/cache-settings.php');
+require_once(plugin_dir_path(__FILE__) . 'admin/prefetch-settings.php');
 require_once(plugin_dir_path(__FILE__) . 'admin/readme.php');
 require_once(plugin_dir_path(__FILE__) . 'admin/css-classes.php');
 
@@ -77,27 +78,50 @@ function cache_everything_enqueue_scripts() {
     // Append a trailing slash if the site uses trailing slashes in the permalink structure
     $js_full_url = $site_url . '/' . CACHE_EVERYTHING_JS_URL . ($use_trailing_slashes ? '/' : '');
 
-    // Combine site URL with the CACHE_EVERYTHIN_CSS_URL to send a full URL without risking a double slash
+    // Combine site URL with the CACHE_EVERYTHING_CSS_URL to send a full URL without risking a double slash
     // Append a trailing slash if the site uses trailing slashes in the permalink structure
     $css_full_url = $site_url . '/' . CACHE_EVERYTHING_CSS_URL . ($use_trailing_slashes ? '/' : '');
 
-    // Enqueue the dynamic CSS file
     wp_enqueue_style('cache-everything', $css_full_url, array(), null, 'all');
 
-    // Localize the script with the roles data, the full JS and CSS URLs, and the site prefix
     $site_prefix = get_site_prefix(); // Retrieve the site prefix using the helper function
 
-    // Retrieve the debug mode setting from WordPress options
     $debug_mode = get_option('cache_everything_debug_mode', '0'); // Default to '0' if not set
+
+    // Retrieve the prefetching options
+    $prefetch_enabled = get_option('cache_everything_prefetch_enable', '0');
+    $prefetch_patterns = get_option('cache_everything_prefetch_patterns', array());
+
+    $patterns_starts_with = array();
+    $patterns_contains = array();
+    $patterns_regex = array();
+
+    foreach ($prefetch_patterns as $pattern_config) {
+        switch ($pattern_config['operator']) {
+            case 'starts_with':
+                $patterns_starts_with[] = $pattern_config['pattern'];
+                break;
+            case 'contains':
+                $patterns_contains[] = $pattern_config['pattern'];
+                break;
+            case 'regex':
+                $patterns_regex[] = $pattern_config['pattern'];
+                break;
+        }
+    }
 
     wp_localize_script('cache-everything', 'wce_Data', array(
         'roles' => $all_roles,
         'jsUrl' => $js_full_url,
         'cssUrl' => $css_full_url,
-        'sitePrefix' => $site_prefix, // Add the site prefix to the localized script data
-        'debugMode' => $debug_mode // Add the debug mode status to the localized script data
+        'sitePrefix' => $site_prefix,
+        'debugMode' => $debug_mode,
+        'prefetchEnabled' => $prefetch_enabled,
+        'prefetchStartsWith' => $patterns_starts_with,
+        'prefetchContains' => $patterns_contains,
+        'prefetchRegex' => $patterns_regex,
     ));
-    
+
 }
 add_action('wp_enqueue_scripts', 'cache_everything_enqueue_scripts');
 
@@ -108,7 +132,7 @@ function cache_everything_modify_headers() {
     }
 
     // Retrieve the options with a default to an empty array if not set
-    $options = get_option('cache_everything_options', []);
+    $options = get_option('cache_everything_cache_options', []);
 
     // Retrieve cache times with defaults
     $max_age = get_option('cache_everything_max_age', 28800);
