@@ -174,18 +174,24 @@ document.addEventListener('wce_UpdateCSS', function() {
     // Determine visibility for guest and user status
     if (isGuest()) {
         visibleClasses.push(`${sitePrefix}-guest`);
+        hiddenClasses.push(`${sitePrefix}-guest-hide`);
         hiddenClasses.push(`${sitePrefix}-user`);
+        visibleClasses.push(`${sitePrefix}-user-hide`);
     } else if (isUser()) {
         visibleClasses.push(`${sitePrefix}-user`);
+        hiddenClasses.push(`${sitePrefix}-user-hide`);
         hiddenClasses.push(`${sitePrefix}-guest`);
+        visibleClasses.push(`${sitePrefix}-guest-hide`);
     }
 
     // Determine visibility for each role
     wce_Data.roles.forEach(role => {
         if (isRole(role)) {
             visibleClasses.push(`${sitePrefix}-${role}`);
+            hiddenClasses.push(`${sitePrefix}-${role}-hide`);
         } else {
             hiddenClasses.push(`${sitePrefix}-${role}`);
+            visibleClasses.push(`${sitePrefix}-${role}-hide`);
         }
     });
 
@@ -362,7 +368,6 @@ function setupPrefetching() {
             url => url.startsWith('javascript:'), // Exclude if URL is a JavaScript call
             url => /\.(pdf|zip|rar|exe|doc|docx|xls|xlsx)$/i.test(url), // Exclude common file downloads
             url => /\.(jpg|jpeg|png|webp|avif|gif|svg|mp4|mp3)$/i.test(url), // Exclude common media files
-            url => url.includes('/action/toggle'), // Exclude URLs intended for actions
             url => url.includes('#!'), // Exclude URLs with hashbangs (ajax)
             url => url.includes('/subscribe'), // Example: Exclude subscription URLs
             url => {
@@ -391,20 +396,28 @@ function setupPrefetching() {
             return urlObj.pathname + urlObj.search;
         };
 
+        // Print all exclusion conditions
+        excludeConditions.forEach((condition, index) => {
+            debugPrint(`Exclusion condition ${index + 1}: ${condition.toString()}`);
+        });
+
         // Add "Starts With" exclusions
         (wce_Data.prefetchStartsWith || []).forEach(pattern => {
             excludeConditions.push(url => getPathAndQuery(url).startsWith(pattern));
+            debugPrint(`Exclusion condition: url => getPathAndQuery(url).startsWith('${pattern}')`);
         });
 
         // Add "Contains" exclusions
         (wce_Data.prefetchContains || []).forEach(pattern => {
             excludeConditions.push(url => getPathAndQuery(url).includes(pattern));
+            debugPrint(`Exclusion condition: url => getPathAndQuery(url).includes('${pattern}')`);
         });
 
         // Add "Regex Patterns" exclusions
         (wce_Data.prefetchRegex || []).forEach(pattern => {
             const regex = new RegExp(pattern);
             excludeConditions.push(url => regex.test(getPathAndQuery(url)));
+            debugPrint(`Exclusion condition: url => getPathAndQuery(url).matches Regex('${pattern}')`);
         });
 
         links.forEach(link => {

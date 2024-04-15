@@ -77,3 +77,10 @@ function cache_everything_enqueue_admin_styles() {
 }
 
 add_action('admin_enqueue_scripts', 'cache_everything_enqueue_admin_styles');
+
+function cache_everything_add_settings_link($links) {
+    $settings_link = '<a href="' . admin_url('options-general.php?page=cache-everything') . '">Settings</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+}
+add_filter('plugin_action_links_cache-everything/cache-everything.php', 'cache_everything_add_settings_link');

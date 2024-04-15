@@ -14,6 +14,31 @@ function cache_everything_display_prefetch_settings() {
     <?php
 }
 
+function cache_everything_set_default_prefetch_settings() {
+    // Force update to default settings
+    update_option('cache_everything_prefetch_enabled', 'no'); // Default disabled
+
+    // Define and force update default patterns
+    $default_patterns = [
+        [
+            'pattern' => 'login',
+            'operator' => 'contains',
+            'comment' => 'Exclude login actions'
+        ],
+        [
+            'pattern' => 'logout',
+            'operator' => 'contains',
+            'comment' => 'Exclude logout actions'
+        ],
+        [
+            'pattern' => '#',
+            'operator' => 'starts_with',
+            'comment' => 'Exclude anchor links'
+        ]
+    ];
+    update_option('cache_everything_prefetch_patterns', $default_patterns);
+}
+
 function cache_everything_register_prefetch_settings() {
     // Register a new setting for "Cache Everything" options
     register_setting('cache_everything_prefetch_options', 'cache_everything_prefetch_enabled');
