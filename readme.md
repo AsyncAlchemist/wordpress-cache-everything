@@ -31,6 +31,25 @@ To customize the plugin's behavior, navigate to the WordPress admin panel and ac
 - **Cache Expiration Times**: Set the maximum age for cached content and configure the stale-while-revalidate behavior to ensure content freshness.
 - **Debug Mode**: Enable or disable debug mode to assist in troubleshooting with detailed console logs.
 
+### Cloudflare Setup
+
+The last part of the set-up is to add two cloudflare cache rules.
+
+1. Rule Name: Do Not Cache WP-ADMIN
+  - Field: URI Path
+  - Operator: Contains
+  - Value: wp-admin
+  - Then: 
+    - Cache eligibility: Bypass cache
+    - Browser TTL: Bypass cache
+2. Rule 2: Cache HTML
+  - Field: Hostname
+  - Operator: Equals
+  - Value: Your website (i.e. www.example.com)
+  - Then: 
+    - Cache eligibility: Eligible for cache
+    - No need to set the Browser TTL (or any other setting)
+
 ## Development
 
 To add new features or modify existing ones, edit the PHP files in the plugin directory and the JavaScript files in the `public/js` directory.

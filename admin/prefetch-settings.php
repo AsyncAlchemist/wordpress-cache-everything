@@ -16,7 +16,7 @@ function cache_everything_display_prefetch_settings() {
 
 function cache_everything_set_default_prefetch_settings() {
     // Force update to default settings
-    update_option('cache_everything_prefetch_enabled', 'no'); // Default disabled
+    update_option('cache_everything_prefetch_enabled', '0'); // Default disabled
 
     // Define and force update default patterns
     $default_patterns = [
@@ -103,9 +103,11 @@ function cache_everything_prefetch_settings_section_callback() {
 }
 
 function cache_everything_prefetch_enable_callback() {
-    $option = get_option('cache_everything_prefetch_enabled');
-    $checked = ($option === 'yes') ? 'checked' : '';
-    echo '<input type="checkbox" id="cache_everything_prefetch_enable" name="cache_everything_prefetch_enabled" value="yes" ' . $checked . '>';
+    $option = get_option('cache_everything_prefetch_enabled', '0'); // Default to '0'
+    $checked = ($option === '1') ? 'checked' : '';
+    // Add a hidden input field with the same name and a value of '0'
+    echo '<input type="hidden" name="cache_everything_prefetch_enabled" value="0">';
+    echo '<input type="checkbox" id="cache_everything_prefetch_enable" name="cache_everything_prefetch_enabled" value="1" ' . $checked . '>';
     echo '<label for="cache_everything_prefetch_enable">Activate Prefetching</label>';
 }
 

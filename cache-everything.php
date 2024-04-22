@@ -3,13 +3,13 @@
  * Plugin Name: Cache Everything
  * Plugin URI: https://github.com/AsyncAlchemist
  * Description: A simple plugin to cache everything in Wordpress.
- * Version: 0.24
+ * Version: 0.25
  * Author: Taylor Selden
  * Author URI: https://github.com/AsyncAlchemist
  */
 define('CACHE_EVERYTHING_JS_URL', 'wp-content/plugins/cache-everything/js');
 define('CACHE_EVERYTHING_CSS_URL', 'wp-content/plugins/cache-everything/css');
-define('CACHE_EVERYTHING_VERSION', '0.24');
+define('CACHE_EVERYTHING_VERSION', '0.25');
 
 require_once(plugin_dir_path(__FILE__) . 'handle-js-request.php');
 require_once(plugin_dir_path(__FILE__) . 'handle-css-request.php');
@@ -90,7 +90,7 @@ function cache_everything_enqueue_scripts() {
     $debug_mode = get_option('cache_everything_debug_mode', '0'); // Default to '0' if not set
 
     // Retrieve the prefetching options
-    $prefetch_enabled = get_option('cache_everything_prefetch_enable', '0');
+    $prefetch_enabled = get_option('cache_everything_prefetch_enabled', '0');
     $prefetch_patterns = get_option('cache_everything_prefetch_patterns', array());
 
     $patterns_starts_with = array();
