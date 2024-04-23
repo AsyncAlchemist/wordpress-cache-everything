@@ -150,6 +150,44 @@ function isUser() {
 }
 
 /**
+ * Checks if the user is an administrator and either rewrites every link on the page to use a cachebuster
+ * or reloads the current page with a cachebuster, depending on whether the WordPress admin bar is present.
+ * This function utilizes the isRole function to determine if the user has an administrator role.
+ * If the user is an administrator, the current page is not in the wp-admin directory, and the Elementor editor is not active,
+ * and if the wp-admin bar is not present, it reloads the current page with a cachebuster. Otherwise, it appends a timestamp
+ * as a query parameter to each link on the page to ensure the content is not served from cache.
+ */
+function rewriteLinksOrReloadForAdmin() {
+    const isEditorActive = document.querySelector('.elementor-editor-active') !== null;
+    const isWpAdminBarPresent = document.getElementById('wpadminbar') !== null;
+
+    debugPrint(`Checking admin role and page conditions for cachebuster application. Admin: ${isRole('administrator')}, WP Admin: ${window.location.href.includes('/wp-admin/')}, Editor Active: ${isEditorActive}, WP Admin Bar Present: ${isWpAdminBarPresent}`);
+
+    if (isRole('administrator') && !window.location.href.includes('/wp-admin/') && !isEditorActive) {
+        if (!isWpAdminBarPresent) {
+            // Reload the current page with a cachebuster if the wp-admin bar is not present
+            const currentUrl = window.location.href;
+            const hasQueryParams = currentUrl.includes('?');
+            const cachebusterUrl = `${currentUrl}${hasQueryParams ? '&' : '?'}cachebuster=${new Date().getTime()}`;
+            debugPrint(`Reloading page for admin without WP Admin Bar: ${cachebusterUrl}`);
+            window.location.href = cachebusterUrl;
+        } else {
+            // Get all the links on the page and append a cachebuster to each if the wp-admin bar is present
+            const links = document.querySelectorAll('a:not(#wpadminbar a)');
+            const timestamp = new Date().getTime();
+
+            links.forEach(link => {
+                const currentUrl = link.href;
+                const hasQueryParams = currentUrl.includes('?');
+                const newUrl = `${currentUrl}${hasQueryParams ? '&' : '?'}cachebuster=${timestamp}`;
+                link.href = newUrl;
+            });
+            debugPrint(`Appended cachebuster to links for admin with WP Admin Bar present.`);
+        }
+    }
+}
+
+/**
  * Checks if the specified role is included for the user, case-insensitively.
  * @param {string} roleName - The name of the role to check.
  * @returns {boolean} True if the role is included for the user, false otherwise.
@@ -452,7 +490,10 @@ addScriptToDOM();
 // Check if the DOM is already loaded
 if (document.readyState === "loading") {
     document.addEventListener('DOMContentLoaded', setupPrefetching);
+    document.addEventListener('DOMContentLoaded', rewriteLinksOrReloadForAdmin);
+
 } else {
     // DOMContentLoaded has already fired, call the function directly
     setupPrefetching();
+    rewriteLinksOrReloadForAdmin();
 }
