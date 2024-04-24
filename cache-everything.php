@@ -3,13 +3,13 @@
  * Plugin Name: Cache Everything
  * Plugin URI: https://github.com/AsyncAlchemist
  * Description: A simple plugin to cache everything in Wordpress.
- * Version: 0.26
+ * Version: 0.27
  * Author: Taylor Selden
  * Author URI: https://github.com/AsyncAlchemist
  */
 define('CACHE_EVERYTHING_JS_URL', 'wp-content/plugins/cache-everything/js');
 define('CACHE_EVERYTHING_CSS_URL', 'wp-content/plugins/cache-everything/css');
-define('CACHE_EVERYTHING_VERSION', '0.26');
+define('CACHE_EVERYTHING_VERSION', '0.27');
 
 require_once(plugin_dir_path(__FILE__) . 'handle-js-request.php');
 require_once(plugin_dir_path(__FILE__) . 'handle-css-request.php');
@@ -129,6 +129,16 @@ add_action('wp_enqueue_scripts', 'cache_everything_enqueue_scripts');
 function cache_everything_modify_headers() {
     // Check if the admin bar is showing, and if so, return early to avoid caching
     if (is_admin_bar_showing()) {
+        return;
+    }
+
+    // Check if the response code is not 200, then return early to avoid caching
+    if (http_response_code() != 200) {
+        return;
+    }
+
+    // Check if the URL contains the word "streamer", then return early to avoid caching
+    if (strpos($_SERVER['REQUEST_URI'], 'streamer') !== false) {
         return;
     }
 
