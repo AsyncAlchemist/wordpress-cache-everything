@@ -164,14 +164,16 @@ function rewriteLinksOrReloadForAdmin() {
     debugPrint(`Checking admin role and page conditions for cachebuster application. Admin: ${isRole('administrator')}, WP Admin: ${window.location.href.includes('/wp-admin/')}, Editor Active: ${isEditorActive}, WP Admin Bar Present: ${isWpAdminBarPresent}`);
 
     if (isRole('administrator') && !window.location.href.includes('/wp-admin/') && !isEditorActive) {
-        if (!isWpAdminBarPresent) {
-            // Reload the current page with a cachebuster if the wp-admin bar is not present
-            const currentUrl = window.location.href;
-            const hasQueryParams = currentUrl.includes('?');
+        const currentUrl = window.location.href;
+        const hasQueryParams = currentUrl.includes('?');
+        const hasCachebuster = currentUrl.includes('cachebuster=');
+
+        if (!isWpAdminBarPresent && !hasCachebuster) {
+            // Reload the current page with a cachebuster if the wp-admin bar is not present and no cachebuster exists
             const cachebusterUrl = `${currentUrl}${hasQueryParams ? '&' : '?'}cachebuster=${new Date().getTime()}`;
             debugPrint(`Reloading page for admin without WP Admin Bar: ${cachebusterUrl}`);
             window.location.href = cachebusterUrl;
-        } else {
+        } else if (isWpAdminBarPresent) {
             // Get all the links on the page and append a cachebuster to each if the wp-admin bar is present
             const links = document.querySelectorAll('a:not(#wpadminbar a)');
             const timestamp = new Date().getTime();
